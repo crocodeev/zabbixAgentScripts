@@ -1,0 +1,23 @@
+LogFile=C:\Zabbix\zabbix_agentd.log
+DebugLevel=0
+Timeout=30
+StartAgents=0
+ServerActive=ip or dns name
+Hostname=tyiui
+HostnameItem=system.hostname
+#firewall
+UserParameter=firewall,powershell.exe -NoLogo -File "C:\Zabbix\posh\GetFirewallStatus.ps1"
+#current ipaddress info
+UserParameter=ipaddress,powershell.exe -NoLogo -File "C:\Zabbix\posh\GetIpAddress.ps1"
+#windows version
+UserParameter=osversion,powershell.exe -NoLogo -File "C:\Zabbix\posh\GetOsVersion.ps1"
+#computer model and vendor
+UserParameter=model,powershell.exe -NoLogo -File "C:\Zabbix\posh\GetModel.ps1"
+#activation info
+UserParameter=isactive,powershell.exe -NoLogo -File "C:\Zabbix\posh\GetActivationStatus.ps1"
+#is Pira exist
+UserParameter=pirastatus,powershell.exe -NoLogo -File "C:\Zabbix\posh\GetPiraStatus.ps1"
+#cpu temperature need framework 3.5
+UserParameter=cputemperature,powershell.exe -NoLogo -File "C:\Zabbix\posh\GetCpuTemperature.ps1"
+#defender status
+UserParameter=defender,powershell.exe -NoLogo -File "C:\Zabbix\posh\GetDefenderStatus.ps1"
