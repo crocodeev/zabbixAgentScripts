@@ -1,4 +1,8 @@
-﻿$isactivate=((Get-Service -Name WinDefend | foreach {$_.status}) -and (Get-MpComputerStatus | foreach{$_.RealTimeProtectionEnabled}))
+﻿
+try{
+
+
+$isactivate=((Get-Service -Name WinDefend | foreach {$_.status}) -and (Get-MpComputerStatus | foreach{$_.RealTimeProtectionEnabled}))
 
 if($isactivate){
 
@@ -9,3 +13,12 @@ Return 1
 Return 0
 
 }
+
+}catch{
+
+Return 0
+
+}
+
+
+
