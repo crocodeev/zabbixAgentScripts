@@ -4,7 +4,7 @@ Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
 $main                            = New-Object system.Windows.Forms.Form
-$main.ClientSize                 = '400,300'
+$main.ClientSize                 = '400,340'
 $main.text                       = "zabbixAgentServiceInstaller"
 $main.TopMost                    = $false
 
@@ -37,14 +37,21 @@ $button2.height                  = 30
 $button2.location                = New-Object System.Drawing.Point(14,86)
 $button2.Font                    = 'Microsoft Sans Serif,10'
 
+$button3                         = New-Object system.Windows.Forms.Button
+$button3.text                    = "SETUP TASKS"
+$button3.width                   = 375
+$button3.height                  = 30
+$button3.location                = New-Object System.Drawing.Point(14,126)
+$button3.Font                    = 'Microsoft Sans Serif,10'
+
 $TextBox1                        = New-Object system.Windows.Forms.TextBox
 $TextBox1.multiline              = $true
 $TextBox1.width                  = 375
 $TextBox1.height                 = 162
-$TextBox1.location               = New-Object System.Drawing.Point(14,125)
+$TextBox1.location               = New-Object System.Drawing.Point(14,165)
 $TextBox1.Font                   = 'Microsoft Sans Serif,10'
 
-$main.controls.AddRange(@($Label1,$pcName,$button1,$button2,$TextBox1))
+$main.controls.AddRange(@($Label1,$pcName,$button1,$button2,$button3, $TextBox1))
 
 $name = $env:COMPUTERNAME
 
@@ -53,61 +60,83 @@ $pcName.Text = $name
 
 $button1.Add_Click({
 
+#change config file
+
 try {
 
 $path = "C:\Zabbix\zabbix_agentd.conf"
  
 $content = Get-Content $path
 
-$content[6]=$name.Text
+$content[5]= "Hostname=" + $pcName.Text
 
 Set-Content -Value $content -Path $path
+$TextBox1.AppendText("CONFIG FILE SUCCESSFULLY CHANGED ")
 
 }
+
 catch 
 {
 
+$TextBox1.AppendText("CONFIG FILE PROBLEM ")
 $TextBox1.AppendText($error[0].Exception)
 
 }
 
-try {
 
-Set-ExecutionPolicy RemoteSigned -Force
-
-}
-
-catch{
-
-  $TextBox1.AppendText($error[0].Exception)
-}
+# allow start Open Hardware Monitor as admin 
 
 try {
+
+  $isPathExist = Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\"
+  
+  if($isPathExist -eq $true){
 
   New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\" -PropertyType String -Name "C:\Zabbix\OpenHardwareMonitor\OpenHardwareMonitorReport.exe" -Value "~ RUNASADMIN" -Force
+  $TextBox1.AppendText("SET POLICY FOR OHM IS OK ") 
+
+  }else{
+
+  New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\"
+  New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\" -PropertyType String -Name "C:\Zabbix\OpenHardwareMonitor\OpenHardwareMonitorReport.exe" -Value "~ RUNASADMIN" -Force
+  $TextBox1.AppendText("SET POLICY FOR OHM IS OK ") 
+
+
+  }  
+
+  
 
 }
 catch {
 
+ $TextBox1.AppendText("SETTING ADMIN RIGHTS FOR OPEN HARDWARE MONITOR PROBLEM ")   
  $TextBox1.AppendText($error[0].Exception)
 
 }
 
 
+#install service
+
+
 try {
 
- $exe = "C:\Zabbix\zabbix_agentd.exe"
- $config = "C:\Zabbix\zabbix_agentd.conf"
-
- & "$exe -c $config -i"
+C:\Zabbix\zabbix_agentd.exe -i -c "C:\Zabbix\zabbix_agentd.conf"
 
 } 
 catch {
 
+  $TextBox1.AppendText("INSTALL ZBX SERVICE PROBLEM ") 
   $TextBox1.AppendText($error[0].Exception)  
 
 }
 
+
+})
+
+
+#run service
+
+$button2.Add_Click({
 
 try{
 
@@ -115,22 +144,21 @@ $isRunning = (Get-Service -Name "Zabbix Agent" | foreach {$_.status})
 
 if($isRunning -eq "Running"){
 
-$TextBox1.AppendText("Service successfully started") 
+$TextBox1.AppendText("Service already started") 
 
 } else {
-
 
 try{
 
 Start-Service -Name "Zabbix Agent"
+$TextBox1.AppendText("Service successfully started") 
 
 }
 catch{
 
-$TextBox1.AppendText("Service successfully started") 
+$TextBox1.AppendText("ERROR WITH SERVICE START") 
 
 }
-
 
 }
 
@@ -138,12 +166,62 @@ $TextBox1.AppendText("Service successfully started")
 }
 catch{
 
-$TextBox1.AppendText("Service successfully started") 
+$TextBox1.AppendText("Service didn't install") 
 
 }
 
+})
 
 
+$button3.Add_Click({
+
+# getActivationStatus
+
+
+$taskUser = $env:COMPUTERNAME + "\" + $env:USERNAME
+
+try{
+
+#task properties
+
+$timeSpan = New-TimeSpan -Minutes 15
+$time = New-ScheduledTaskTrigger -RepetitionInterval $timeSpan -Once -At 00:02
+$act = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-NoLogo -File C:\Zabbix\posh\GetActivationStatusToDataTXT.ps1"
+
+#registerTask 
+Register-ScheduledTask -TaskName "getActivationStatus" -Action $act -Trigger $time -User $taskUser -RunLevel Highest
+
+$TextBox1.AppendText("TASK getActivationStatus SUCCEFULLY REGISTERED...")
+}
+
+catch{
+
+$TextBox1.AppendText("CANNOT IMPORT TASK getActivationStatus") 
+$TextBox1.AppendText($error[0].Exception)  
+
+} 
+
+# getCPUTemperature
+
+try{
+#task properties
+
+$timeSpan = New-TimeSpan -Minutes 5
+$time = New-ScheduledTaskTrigger -RepetitionInterval $timeSpan -Once -At 00:05
+$act = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-NoLogo -File C:\Zabbix\posh\GetCpuTemperatureToDataTXT.ps1"
+
+#registerTask 
+Register-ScheduledTask -TaskName "getCPUtemperature" -Action $act -Trigger $time -User $taskUser -RunLevel Highest
+
+$TextBox1.AppendText("TASK getCPUTemperature SUCCEFULLY REGISTERED...")
+}
+
+catch{
+
+$TextBox1.AppendText("CANNOT IMPORT TASK getCPUTemperature") 
+$TextBox1.AppendText($error[0].Exception)  
+
+}
 
 })
 
