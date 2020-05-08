@@ -3,14 +3,36 @@ $file="C:\Zabbix\posh\data.txt"
 
 $content=(Get-Content $file)
 
-if($temperature -eq $null ){
+if($content -eq $null){
+
+    if($temperature -eq $null ){
+
+    Add-Content -Path $file -Value "0"
+
+    }else{
+
+    $c = $temperature[0].Line.Substring(29,2)
+    Add-Content -Path $file -Value $c
+   
+
+    }
+
+
+
+}else{
+
+    if($temperature -eq $null ){
 
     $content[0]="0"
     Set-Content -Value $content -Path $file
 
-}else{
+    }else{
 
     $content[0]=$temperature[0].Line.Substring(29,2)
     Set-Content -Value $content -Path $file
 
+    }
+
+
 }
+

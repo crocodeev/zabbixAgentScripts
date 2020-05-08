@@ -2,7 +2,7 @@
 try{
 
 
-$isactivate=((Get-Service -Name WinDefend | foreach {$_.status}) -and (Get-MpComputerStatus | foreach{$_.RealTimeProtectionEnabled}))
+$isactivate=((Get-Service -Name WinDefend -ErrorAction SilentlyContinue | foreach {$_.status}) -and (Get-MpComputerStatus | foreach{$_.RealTimeProtectionEnabled}))
 
 if($isactivate){
 

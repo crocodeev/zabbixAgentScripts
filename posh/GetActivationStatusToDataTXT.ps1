@@ -4,6 +4,22 @@ $file="C:\Zabbix\posh\data.txt"
 
 $content=(Get-Content $file)
 
-$content[1]=$isactivate
+if($content -eq $null){
 
-Set-Content -Value $content -Path $file
+ Add-Content -Path $file -Value "0"
+ Add-Content -Path $file -Value $content
+
+}else{
+
+ if($content[1] -eq $null){
+
+    Add-Content -Path $file -Value $isactivate
+
+ }else{
+    
+    $content[1] = $isactivate
+    Set-Content -Value $content -Path $file
+ }   
+
+}
+
