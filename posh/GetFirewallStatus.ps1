@@ -1,4 +1,16 @@
-﻿$firewall=Get-NetFirewallProfile 
+﻿$firewall
+
+try{
+
+$firewall=Get-NetFirewallProfile -ErrorAction SilentlyContinue
+
+}catch{
+
+Return 0
+
+}
+
+
 $firewallServiceStatus=get-service -Name MpsSvc | foreach {$_.status}
 
 $counter
