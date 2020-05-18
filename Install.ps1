@@ -70,6 +70,7 @@ $content = Get-Content $path
 
 $content[5]= "Hostname=" + $pcName.Text
 
+
 Set-Content -Value $content -Path $path
 $TextBox1.AppendText("CONFIG FILE SUCCESSFULLY CHANGED ")
 
@@ -120,7 +121,19 @@ catch {
 
 try {
 
-C:\Zabbix\zabbix_agentd.exe -i -c "C:\Zabbix\zabbix_agentd.conf"
+$osArchitecture = (Get-WmiObject  win32_operatingsystem).OSArchitecture
+
+    if($osArchitecture -eq "64-bit"){
+
+    C:\Zabbix\64\zabbix_agentd.exe -i -c "C:\Zabbix\zabbix_agentd.conf"
+
+    }else{
+    
+    C:\Zabbix\32\zabbix_agentd.exe -i -c "C:\Zabbix\zabbix_agentd.conf"
+
+    }
+
+
 
 } 
 catch {
