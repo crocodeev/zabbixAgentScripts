@@ -257,9 +257,14 @@ try{
     Invoke-WebRequest -Uri $urlUpdateConfig -OutFile "C:\Zabbix\updateStrings.txt"
 
     Expand-Archive -Path "C:\Zabbix\posh.zip" -DestinationPath "C:\Zabbix\posh" -Force
+    Move-Item -Path "C:\Zabbix\posh\posh\*" -Destination "C:\Zabbix\posh" -Force
+    Remove-Item -Path "C:\Zabbix\posh\posh"
+    
 
     $configUpdates = Get-Content -Path "C:\Zabbix\updateStrings.txt"
-    Add-Content -Path "C:\Zabbix\zabbix_agentd.conf"
+    Add-Content -Path "C:\Zabbix\zabbix_agentd.conf" -Value $configUpdates
+  
+
 
     Stop-Service -Name "Zabbix Agent"
     Start-Service -Name "Zabbix Agent"
