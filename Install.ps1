@@ -4,7 +4,7 @@ Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
 $main                            = New-Object system.Windows.Forms.Form
-$main.ClientSize                 = '400,340'
+$main.ClientSize                 = '400,390'
 $main.text                       = "zabbixAgentServiceInstaller"
 $main.TopMost                    = $false
 
@@ -44,14 +44,21 @@ $button3.height                  = 30
 $button3.location                = New-Object System.Drawing.Point(14,126)
 $button3.Font                    = 'Microsoft Sans Serif,10'
 
+$button4                         = New-Object system.Windows.Forms.Button
+$button4.text                    = "UPDATE"
+$button4.width                   = 375
+$button4.height                  = 30
+$button4.location                = New-Object System.Drawing.Point(14,166)
+$button4.Font                    = 'Microsoft Sans Serif,10'
+
 $TextBox1                        = New-Object system.Windows.Forms.TextBox
 $TextBox1.multiline              = $true
 $TextBox1.width                  = 375
 $TextBox1.height                 = 162
-$TextBox1.location               = New-Object System.Drawing.Point(14,165)
+$TextBox1.location               = New-Object System.Drawing.Point(14,205)
 $TextBox1.Font                   = 'Microsoft Sans Serif,10'
 
-$main.controls.AddRange(@($Label1,$pcName,$button1,$button2,$button3, $TextBox1))
+$main.controls.AddRange(@($Label1,$pcName,$button1,$button2,$button3,$button4, $TextBox1))
 
 $name = $env:COMPUTERNAME
 
@@ -238,6 +245,35 @@ $TextBox1.AppendText($error[0].Exception)
 
 })
 
+
+$button4.Add_Click({
+
+$urlNewScripts = "https://nc.inplay.space/index.php/s/PYp55oLD2rSoo4s/download"
+$urlUpdateConfig = "https://nc.inplay.space/index.php/s/3JpWbXXJW8JCB8E/download"
+
+try{
+
+    Invoke-WebRequest -Uri $urlNewScripts -OutFile "C:\Zabbix\posh.zip"
+    Invoke-WebRequest -Uri $urlUpdateConfig -OutFile "C:\Zabbix\updateStrings.txt"
+
+    Expand-Archive -Path "C:\Zabbix\posh.zip" -DestinationPath "C:\Zabbix\posh" -Force
+
+    $configUpdates = Get-Content -Path "C:\Zabbix\updateStrings.txt"
+    Add-Content -Path "C:\Zabbix\zabbix_agentd.conf"
+
+    Stop-Service -Name "Zabbix Agent"
+    Start-Service -Name "Zabbix Agent"
+
+    $TextBox1.AppendText("SUCCESSFULLY UPGRADED")
+
+}catch{
+
+    $TextBox1.AppendText($error[0].Exception)
+
+}
+
+
+})
 
 $main.ShowDialog()
 
