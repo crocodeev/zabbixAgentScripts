@@ -199,7 +199,7 @@ try{
 
 $timeSpan = New-TimeSpan -Minutes 15
 $time = New-ScheduledTaskTrigger -RepetitionInterval $timeSpan -Once -At 00:02
-$act = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-NoLogo -File C:\Zabbix\posh\GetActivationStatusToDataTXT.ps1"
+$act = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-NoLogo -WindowStyle hidden -File C:\Zabbix\posh\GetActivationStatusToDataTXT.ps1"
 
 #registerTask 
 Register-ScheduledTask -TaskName "getActivationStatus" -Action $act -Trigger $time -User $taskUser -RunLevel Highest
@@ -221,7 +221,7 @@ try{
 
 $timeSpan = New-TimeSpan -Minutes 5
 $time = New-ScheduledTaskTrigger -RepetitionInterval $timeSpan -Once -At 00:05
-$act = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-NoLogo -File C:\Zabbix\posh\GetCpuTemperatureToDataTXT.ps1"
+$act = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-NoLogo -WindowStyle hidden -File C:\Zabbix\posh\GetCpuTemperatureToDataTXT.ps1"
 
 #registerTask 
 Register-ScheduledTask -TaskName "getCPUtemperature" -Action $act -Trigger $time -User $taskUser -RunLevel Highest
