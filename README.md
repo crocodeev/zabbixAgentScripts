@@ -21,5 +21,9 @@ folder **C:\Zabbix** which contain
 ## Installation Guide
 
 * edit config file, e.g. change **ServerActive=xxx.xxx.xxx**
+* run **setExecutionPolicy.bat** as admin
+* merge runAs.reg it's enable "run as admin" in context menu for powershell scripts
+* right click on "Install.ps1" "run as admin"
+* ![Install script window](https://github.com/crocodeev/zabbixAgentScripts/blob/master/img/img.txt)
  
 
